@@ -8323,6 +8323,16 @@ CUDA_SPECIAL_MAP = collections.OrderedDict(
         ('cusolverDnXsyevjGetResidual', ('hipsolverDnXsyevjGetResidual', CONV_MATH_FUNC, API_SPECIAL)),
         ('cusolverDnXgesvdjGetResidual', ('hipsolverDnXgesvdjGetResidual', CONV_MATH_FUNC, API_SPECIAL)),
         ('cusolverDnXsyevjGetSweeps', ('hipsolverDnXsyevjGetSweeps', CONV_MATH_FUNC, API_SPECIAL)),
+        
+        # wmma
+        ('wmma::fragment', ('rocwmma::fragment', API_WMMA, API_SPECIAL)),
+        ('wmma::load_matrix_sync', ('rocwmma::load_matrix_sync', API_WMMA, API_SPECIAL)),
+        ('wmma::store_matrix_sync', ('rocwmma::store_matrix_sync', API_WMMA, API_SPECIAL)),
+        ('wmma::mma_sync', ('rocwmma::mma_sync', API_WMMA, API_SPECIAL)),
+        ('wmma::fill_fragment', ('rocwmma::fill_fragment', API_WMMA, API_SPECIAL)),
+        ('wmma::matrix_a', ('rocwmma::matrix_a', API_WMMA, API_SPECIAL)),
+        ('wmma::matrix_b', ('rocwmma::matrix_b', API_WMMA, API_SPECIAL)),
+        ('wmma::accumulator', ('rocwmma::accumulator', API_WMMA, API_SPECIAL))
     ]
 )
 
