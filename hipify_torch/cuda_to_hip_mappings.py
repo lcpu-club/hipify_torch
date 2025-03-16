@@ -28,36 +28,43 @@ ROCm/HIP string, a type and API annotation and - optionally - an annotation if i
 supported in ROCm/HIP yet.
 """
 
+rocm_version = (0, 0, 0)
+rocm_version_found = False
+
 # We need to know the ROCm version so we can conditionalize some of the mappings later.
 # As of ROCm 5.0, the version is found in rocm_version.h header file under /opt/rocm/include.
 rocm_path = os.environ.get('ROCM_HOME') or os.environ.get('ROCM_PATH') or "/opt/rocm"
 try:
-    rocm_path = subprocess.check_output(["hipconfig", "--rocmpath"]).decode("utf-8")
+    hipversion_output = subprocess.check_output(["hipconfig", "--version"]).decode("utf-8")
+    # example: 6.3.42134-a9a80e791, split by . and - to get major, minor, patch
+    rocm_version = tuple(map(int, hipversion_output.split("-")[0].split(".")))
+    rocm_version_found = True
 except subprocess.CalledProcessError:
-    print(f"Warning: hipconfig --rocmpath failed, assuming {rocm_path}")
+    print(f"Warning: hipconfig --rocmpath failed, assuming {rocm_path}, trying to read rocm_version.h")
 except (FileNotFoundError, PermissionError, NotADirectoryError):
     # Do not print warning. This is okay. This file can also be imported for non-ROCm builds.
     pass
 
-rocm_version = (0, 0, 0)
-rocm_version_h = f"{rocm_path}/include/rocm_version.h"
-# The file could be missing due to 1) ROCm version < 5.0, or 2) no ROCm install.
-if os.path.isfile(rocm_version_h):
-    RE_MAJOR = re.compile(r"#define\s+ROCM_VERSION_MAJOR\s+(\d+)")
-    RE_MINOR = re.compile(r"#define\s+ROCM_VERSION_MINOR\s+(\d+)")
-    RE_PATCH = re.compile(r"#define\s+ROCM_VERSION_PATCH\s+(\d+)")
-    major, minor, patch = 0, 0, 0
-    for line in open(rocm_version_h, "r"):
-        match = RE_MAJOR.search(line)
-        if match:
-            major = int(match.group(1))
-        match = RE_MINOR.search(line)
-        if match:
-            minor = int(match.group(1))
-        match = RE_PATCH.search(line)
-        if match:
-            patch = int(match.group(1))
-    rocm_version = (major, minor, patch)
+if not rocm_version_found:
+    for rocm_version_h in [f"{rocm_path}/include/rocm_version.h", f"{rocm_path}/include/rocm-core/rocm_version.h"]:
+        # The file could be missing due to 1) ROCm version < 5.0, or 2) no ROCm install.
+        if os.path.isfile(rocm_version_h):
+            RE_MAJOR = re.compile(r"#define\s+ROCM_VERSION_MAJOR\s+(\d+)")
+            RE_MINOR = re.compile(r"#define\s+ROCM_VERSION_MINOR\s+(\d+)")
+            RE_PATCH = re.compile(r"#define\s+ROCM_VERSION_PATCH\s+(\d+)")
+            major, minor, patch = 0, 0, 0
+            for line in open(rocm_version_h, "r"):
+                match = RE_MAJOR.search(line)
+                if match:
+                    major = int(match.group(1))
+                match = RE_MINOR.search(line)
+                if match:
+                    minor = int(match.group(1))
+                match = RE_PATCH.search(line)
+                if match:
+                    patch = int(match.group(1))
+            rocm_version = (major, minor, patch)
+            break
 
 # List of math functions that should be replaced inside device code only.
 MATH_TRANSPILATIONS = collections.OrderedDict(
