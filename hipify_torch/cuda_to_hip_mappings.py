@@ -8336,6 +8336,8 @@ CUDA_SPECIAL_MAP = collections.OrderedDict(
         ('wmma::accumulator', ('rocwmma::accumulator', API_WMMA, API_SPECIAL)),
         ('wmma::row_major', ('rocwmma::row_major', API_WMMA, API_SPECIAL)),
         ('wmma::col_major', ('rocwmma::col_major', API_WMMA, API_SPECIAL)),
+        ('wmma::mem_col_major', ('rocwmma::mem_col_major', API_WMMA, API_SPECIAL)),
+        ('wmma::mem_row_major', ('rocwmma::mem_row_major', API_WMMA, API_SPECIAL)),
     ]
 )
 
